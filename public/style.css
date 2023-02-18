@@ -58,7 +58,7 @@ h1 {
 	margin-bottom: 1.5em;
 }
 
-#layout-buttons {
+.layout-buttons {
 	width: 100%;
 	display: flex;
 	justify-content: space-between;
@@ -79,10 +79,7 @@ h1 {
 	color: black;
 }
 
-a.secondary {
-	font-size: 0.9em;
-	color: black;
-}
+
 
 #reload {
 	color: black;
@@ -178,12 +175,12 @@ summary h3 {
 	font-size: 0.98em;
 }
 
-#reset {
+/* #reset {
 	position: fixed;
 	top: 32px;
 	left: 32px;
 	padding: 1em;
-}
+} */
 
 .sec-cont {
 	display: flex;
@@ -234,10 +231,67 @@ hr {
 	padding: 4px 18px;
 }
 
+/* SHARE */
+
+summary.no-arrow {
+	display: block;
+	margin-bottom: 0;
+}
+
+#share {
+	display: flex;
+	flex-direction: column;
+	gap: 1em;
+	padding: 2em;
+	background-color: var(--primary-light);
+	border-radius: 24px;
+}
+
+.link-box {
+	width: 100%;
+	text-align: center;
+	display: flex;
+	align-items: center;
+	flex-direction: column;
+	gap: 1em;
+}
+
+.link-box img {
+	width: 75%;
+}
+
+button.plain {
+	width: 90%;
+	background-color: transparent;
+	color: var(--primary);
+	text-align: center;
+	padding: 10px;
+	font-size: 1em;
+	font-weight: bold;
+	border: none;
+	cursor: pointer;
+}
+
+.secondary.large {
+	font-size: 1em;
+	font-weight: bold;
+	color: var(--primary);
+	/* padding: 8px; */
+	/* border: 1px solid var(--primary); */
+	border-radius: 20px;
+}
+
+.nopointer {
+	pointer-events: none;
+}
+
 /* DESKTOP OVERRIDES */
 
 @media (min-width: 720px) {
 	#app {
 		padding: 7em 5em;
+	}
+	#share {
+		flex-direction: row;
 	}
 }

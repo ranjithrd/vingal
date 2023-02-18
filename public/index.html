@@ -5,6 +5,10 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="/style.css" />
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,700,0,0"
+		/>
 		<title>V</title>
 	</head>
 	<body>
@@ -16,30 +20,61 @@
 			const LAYOUT = (pageData) =>
 				`<div id="col">
 					<div id="info">
-						<h1>${pageData.title}</h1>
-						<details>
-							<summary>
-								<a class="secondary" href="/share">Share or edit this page</a>
-							</summary>
+						<div class="layout-buttons">
+							<button id="reload" class="secondary" onClick="refreshData()">Refresh Data</button>
+							<a class="secondary large" style="color: black" href="https://docs.google.com/spreadsheets/d/1A1CMkDPP_zI3Uqsnkb588lHbKjuZVe2OigauPbUd3uc/edit?usp=sharing" target="_blank">Edit records</a>
+							</div>
+							<div class="layout-buttons">
+								<h1>${pageData.title}</h1>
+								<button class="secondary large" onClick="document.getElementById('share-summary').toggleAttribute('open')">
+									<span class="material-symbols-outlined">
+										share
+									</span>
+								</button>
+						</div>
+						<div></div>
+						<details id="share-summary">
+							<summary class="no-arrow"></summary>
 							${SHARE(pageData)}
 						</details>
-						<div></div>
-						<div id="layout-buttons">
+						${SEARCH(pageData)}
+						<div class="layout-buttons" id="reset-slot">
 							<button id="hide-all" class="secondary" onClick="hideAll()">Hide All</button>
-							<button id="reload" class="secondary" onClick="refreshData()">Refresh Data</button>
 						</div>
 					</div>
-				</div>`
+				</div>
+			`
 
-			const SHARE = (pageData) => `
-			<div id="share">
-				<sub>Link to this page</sub>
-				
+			const SEARCH = (pageData) => `
+			<div id="search">
+				<input type="text" placeholder="Look for something...">
+				<button id="search-btn">Search</button>
+			</div>
+			`
+
+			const SHARE = (pageData) =>
+				`<div id="share">
+				<div class="link-box">
+					<h3>This Page</h3>
+					<p>Anyone on the internet can access this page.</p>
+					<p>Scan the QR code or tap it to share the link.</p>
+					<button onClick="linkV()" id="link-share-e" class="plain">
+						<img src="/view_qr.png" width="100%">
+					</button>
+				</div>
+				<div class="link-box">
+					<h3>Edit Page</h3>
+					<p>Only authorized users can edit.</p> 
+					<p>Scan the QR code or tap it to share the link.</p>
+					<button onClick="linkE()" id="link-share-e" class="plain">
+						<img src="/edit_qr.png" width="100%">
+					</button>
+				</div>
 			</div>
 			`
 
 			const SECTION = (n) =>
-				`<details class="sec"><summary><p id="open">Click to hide</p><p id="closed">Click to view</p><h3>${n}</h3></summary><div class="sec-cont" id="c-${n}"></div></details>`
+				`<details class="sec" id="details-${n}"><summary><p id="open">Click to hide</p><p id="closed">Click to view</p><h3>${n}</h3></summary><div class="sec-cont" id="c-${n}"></div></details>`
 
 			const CARD = (code, title, c1, c2, c3) =>
 				`<div class="card">
@@ -56,10 +91,48 @@
 				`<button class="chip" id="b-${gCode}-${gText}-${gType}" onClick="chipHandler(${gCode}, '${gType}', '${gText}')">${gText}</button>`
 
 			const RESET = () =>
-				`<button id="reset" onClick="resetHandler()">Reset Filters<style>body{padding-top:2em;}</style></button>`
+				`<button id="reset" class="secondary" onClick="resetHandler()">Reset Filters</button>`
 
 			// window.data = {}
 			// window.filteredData = {}
+
+			function linkV() {
+				if (navigator.share) {
+					navigator
+						.share({
+							title: "Vingal",
+							url: "https://ranjithrd.github.io/vingal",
+						})
+						.then(() => {
+							console.log("Shared")
+						})
+						.catch(console.error)
+				} else {
+					navigator.clipboard.writeText(
+						"https://ranjithrd.github.io/vingal"
+					)
+					alert("Copied link to clipboard! Share anywhere.")
+				}
+			}
+
+			function linkE() {
+				if (navigator.share) {
+					navigator
+						.share({
+							title: "Edit Vingal",
+							url: "https://docs.google.com/spreadsheets/d/1A1CMkDPP_zI3Uqsnkb588lHbKjuZVe2OigauPbUd3uc/edit?usp=sharing",
+						})
+						.then(() => {
+							console.log("Shared")
+						})
+						.catch(console.error)
+				} else {
+					navigator.clipboard.writeText(
+						"https://docs.google.com/spreadsheets/d/1A1CMkDPP_zI3Uqsnkb588lHbKjuZVe2OigauPbUd3uc/edit?usp=sharing"
+					)
+					alert("Copied link to clipboard! Share anywhere.")
+				}
+			}
 
 			function filterData(c) {
 				const [_, code, text, type] = c.split("-")
@@ -76,6 +149,11 @@
 
 			function render() {
 				window.filteredData = window.data
+				const [detEls, _] = isAnyDetailsOpen()
+				const openEls = [...detEls.filter(e => e.open)]
+
+				console.log(openEls)
+
 
 				document.getElementById("app").innerHTML = LAYOUT(
 					window.pageData
@@ -124,8 +202,15 @@
 
 				setHideAllText()
 
+				console.log(openEls)
+
+				for (const el of openEls) {
+					console.log(el.id)
+					document.getElementById(el.id).setAttribute("open", "true")
+				}
+
 				if ((window.selected ?? []).length > 0) {
-					// document.getElementById("app").innerHTML += RESET()
+					document.getElementById("reset-slot").innerHTML += RESET()
 				}
 			}
 
@@ -153,10 +238,10 @@
 			}
 
 			function isAnyDetailsOpen() {
-				const els = document.getElementsByTagName("details")
-				const isAnyOpen = Array.from(els)
-					.map((e) => e.open)
-					.includes(true)
+				const els = Array.from(
+					document.getElementsByTagName("details")
+				).filter((e) => e.id != "share-summary")
+				const isAnyOpen = els.map((e) => e.open).includes(true)
 
 				return [els, isAnyOpen]
 			}
