@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="/style.css" />
+		<title>V</title>
+	</head>
+	<body>
+		<div id="app"></div>
+
+		<script>
+			const LOADING = () =>
+				`<div id="loading">Loading your records...</div>`
+			const LAYOUT = (pageData) =>
+				`<div id="col">
+					<div id="info">
+						<h1>${pageData.title}</h1>
+						<details>
+							<summary>
+								<a class="secondary" href="/share">Share or edit this page</a>
+							</summary>
+							${SHARE(pageData)}
+						</details>
+						<div></div>
+						<div id="layout-buttons">
+							<button id="hide-all" class="secondary" onClick="hideAll()">Hide All</button>
+							<button id="reload" class="secondary" onClick="refreshData()">Refresh Data</button>
+						</div>
+					</div>
+				</div>`
+
+			const SHARE = (pageData) => `
+			<div id="share">
+				<sub>Link to this page</sub>
+				
+			</div>
+			`
+
+			const SECTION = (n) =>
+				`<details class="sec"><summary><p id="open">Click to hide</p><p id="closed">Click to view</p><h3>${n}</h3></summary><div class="sec-cont" id="c-${n}"></div></details>`
+
+			const CARD = (code, title, c1, c2, c3) =>
+				`<div class="card">
+                        <div class="left">
+			                     <strong>${code}</strong>
+                                 </div>
+                                 <div class="right">
+			                     <h3>${title}</h3>
+			                     <p>${c1} ${c2 ? `| ${c2}` : ""} ${c3 ? `| ${c3}` : ""}</p>
+                                 </div>
+			             </div>`
+
+			const CHIP = (gCode, gText, gType) =>
+				`<button class="chip" id="b-${gCode}-${gText}-${gType}" onClick="chipHandler(${gCode}, '${gType}', '${gText}')">${gText}</button>`
+
+			const RESET = () =>
+				`<button id="reset" onClick="resetHandler()">Reset Filters<style>body{padding-top:2em;}</style></button>`
+
+			// window.data = {}
+			// window.filteredData = {}
+
+			function filterData(c) {
+				const [_, code, text, type] = c.split("-")
+
+				let f = structuredClone(window.filteredData ?? {})
+
+				const tI = f.findIndex((e) => e.Type == type)
+				f[tI].Values = f[tI].Values.filter((e) => e[code] == text)
+
+				console.log([tI, f[tI].Values.filter((e) => e[code] == text)])
+
+				window.filteredData = f
+			}
+
+			function render() {
+				window.filteredData = window.data
+
+				document.getElementById("app").innerHTML = LAYOUT(
+					window.pageData
+				)
+				;(window.selected ?? []).forEach((e) => filterData(e))
+
+				for (const type of window.filteredData) {
+					document.getElementById("col").innerHTML += SECTION(
+						type.Type
+					)
+					document.getElementById(
+						"c-" + type.Type
+					).innerHTML += `<div class="chips" id="s-${type.Type}"></div>`
+
+					for (const tag of [
+						...new Set(type.Values.map((e) => e[2])),
+					]) {
+						document.getElementById("s-" + type.Type).innerHTML +=
+							CHIP(2, tag, type.Type)
+					}
+
+					document.getElementById("s-" + type.Type).innerHTML +=
+						"<br><hr>"
+
+					for (const tag of [
+						...new Set(type.Values.map((e) => e[3])),
+					]) {
+						document.getElementById("s-" + type.Type).innerHTML +=
+							CHIP(3, tag, type.Type)
+					}
+
+					for (const el of type.Values) {
+						document.getElementById("c-" + type.Type).innerHTML +=
+							CARD(...el)
+					}
+				}
+
+				;(window.selected ?? []).forEach((e) => {
+					window.filtered = filterData(e, filteredData)
+					if (document.getElementById(e)) {
+						document
+							.getElementById(e)
+							.setAttribute("selected", "true")
+					}
+				})
+
+				setHideAllText()
+
+				if ((window.selected ?? []).length > 0) {
+					// document.getElementById("app").innerHTML += RESET()
+				}
+			}
+
+			async function load() {
+				document.getElementById("app").innerHTML = LOADING()
+
+				const resData = (await (await fetch("/r/index")).json()) ?? {
+					pageData: {},
+					data: [],
+				}
+
+				window.data = resData.data
+				window.filteredData = structuredClone(window.data)
+
+				window.pageData = resData.pageData
+
+				console.log(window.data)
+				console.log(window.filteredData)
+
+				render()
+			}
+
+			async function refreshData() {
+				window.location.href = "/reload"
+			}
+
+			function isAnyDetailsOpen() {
+				const els = document.getElementsByTagName("details")
+				const isAnyOpen = Array.from(els)
+					.map((e) => e.open)
+					.includes(true)
+
+				return [els, isAnyOpen]
+			}
+
+			function setHideAllText() {
+				if (isAnyDetailsOpen()[1]) {
+					document.getElementById("hide-all").innerText =
+						"Hide all records"
+				} else {
+					document.getElementById("hide-all").innerText =
+						"Show all records"
+				}
+			}
+
+			function hideAll() {
+				const [els, isAnyOpen] = isAnyDetailsOpen()
+
+				for (const el of els) {
+					if (isAnyOpen) {
+						el.removeAttribute("open")
+					} else {
+						el.setAttribute("open", "true")
+					}
+				}
+
+				setHideAllText()
+			}
+
+			function chipHandler(code, type, text) {
+				const id = `b-${code}-${text}-${type}`
+
+				if ((window.selected ?? []).includes(id)) {
+					window.selected.splice(window.selected.indexOf(id), 1)
+				} else {
+					window.selected = [...(window.selected ?? []), id]
+				}
+
+				render()
+			}
+
+			function resetHandler() {
+				window.filteredData = structuredClone(window.data)
+				window.filtered = false
+				window.selected = []
+				render()
+			}
+
+			load()
+		</script>
+	</body>
+</html>

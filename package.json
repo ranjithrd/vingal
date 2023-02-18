@@ -1,0 +1,19 @@
+{
+	"name": "vingal",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "nodemon server.js",
+		"start": "node server.js"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"dependencies": {
+		"ejs": "^3.1.8",
+		"express": "^4.18.2",
+		"googleapis": "^110.0.0",
+		"liquidjs": "^10.4.0"
+	}
+}
