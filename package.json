@@ -4,7 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
-		"test": "nodemon server.js",
+		"test": "nodemon server.js -i cache.json",
 		"start": "node server.js"
 	},
 	"keywords": [],

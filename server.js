@@ -1,5 +1,6 @@
 const express = require("express")
 const { google } = require("googleapis")
+const fs = require("fs").promises
 
 const app = express()
 
@@ -13,6 +14,7 @@ app.set("view engine", "liquid")
 app.use(express.static("public"))
 
 const ID = "1A1CMkDPP_zI3Uqsnkb588lHbKjuZVe2OigauPbUd3uc"
+const refreshValue = 1000 * 60 * 30
 
 async function getSheetsClient() {
 	const au = new google.auth.GoogleAuth({
@@ -97,13 +99,28 @@ async function getSheetData() {
 
 let finalData = {}
 
+async function getCache() {
+	return JSON.parse(await fs.readFile("./cache.json"))
+}
+
 async function refreshData() {
 	try {
+		console.log("Refreshing data...")
 		const d = await getSheetData()
 
 		if (!d) throw new Error("No data found!")
 
 		finalData = d
+
+		await fs.writeFile(
+			"./cache.json",
+			JSON.stringify({
+				lastRefreshed: Date.now(),
+				data: d,
+			})
+		)
+
+		console.log("Refreshed data, saved to cache")
 	} catch (e) {
 		console.error(e)
 	}
@@ -121,11 +138,27 @@ app.get("/pretty_json", (_, res) => {
 	res.send(JSON.stringify(finalData, null, 2))
 })
 
-app.get("/r/index", (_, res) => {
+app.get("/r/index", async (_, res) => {
+	let { lastRefreshed, data } = await getCache()
+
+	const now = Date.now()
+	console.log([
+		"/r/index",
+		lastRefreshed,
+		now,
+		now - refreshValue,
+		lastRefreshed < now - refreshValue,
+	])
+
+	if (!data || lastRefreshed < now - refreshValue) {
+		await refreshData()
+	} else {
+		finalData = data
+	}
+
 	let d = []
 
 	for (const [k, v] of Object.entries(finalData)) {
-        console.log(v)
 		d.push({
 			Type: k,
 			Values: v.map((e) => [e.Code, e.Title, e.Cat1, e.Cat2, e.Cat3]),
@@ -133,10 +166,10 @@ app.get("/r/index", (_, res) => {
 	}
 
 	const pageData = {
-		title: "Records"
+		title: "Records",
 	}
 
-	res.send({pageData: pageData, data: d})
+	res.send({ pageData: pageData, data: d })
 })
 
 app.get("/reload", async (req, res) => {
@@ -144,8 +177,11 @@ app.get("/reload", async (req, res) => {
 	res.redirect("/")
 })
 
-app.listen(process.env.PORT || 3000, () => {
-	console.log("Server started")
-    // refreshData()
-    finalData = require("./cache.json")
-})
+async function main() {
+	await refreshData()
+	app.listen(process.env.PORT || 3000, () => {
+		console.log("Server started")
+	})
+}
+
+main()
