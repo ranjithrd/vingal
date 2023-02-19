@@ -15,6 +15,12 @@
 				--secondary-text: rgb(96, 96, 96);
 			}
 
+            body {
+                background-color: white;
+                padding: 3em 2em;
+                text-align: center;
+            }
+
 			summary.no-arrow {
 				display: block;
 				margin-bottom: 0;
@@ -35,8 +41,12 @@
 				display: flex;
 				align-items: center;
 				flex-direction: column;
-				gap: 1em;
+				gap: 0em;
 			}
+
+            p {
+                margin: 0;
+            }
 
 			.link-box img {
 				width: 75%;
@@ -108,24 +118,29 @@
 					flex-direction: row;
 				}
 			}
+
+            .link-box button {
+                margin-top: 2em;
+            }
 		</style>
 	</head>
 	<body>
+        <h1>Records</h1>
 		<div id="share">
 			<div class="link-box">
-				<h3>This Page</h3>
+				<h2>View Records</h2>
 				<p>Anyone on the internet can access this page.</p>
 				<p>Scan the QR code or tap it to share the link.</p>
 				<button onClick="linkV()" id="link-share-e" class="plain">
-					<img src="/view_qr.png" width="100%" />
+					<img src="/vingal/view_qr.png" width="100%" />
 				</button>
 			</div>
 			<div class="link-box">
-				<h3>Edit Page</h3>
+				<h2>Edit Records</h2>
 				<p>Only authorized users can edit.</p>
 				<p>Scan the QR code or tap it to share the link.</p>
 				<button onClick="linkE()" id="link-share-e" class="plain">
-					<img src="/edit_qr.png" width="100%" />
+					<img src="/vingal/edit_qr.png" width="100%" />
 				</button>
 			</div>
 		</div>
