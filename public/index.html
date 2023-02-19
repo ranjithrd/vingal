@@ -13,14 +13,12 @@
 		<link rel="stylesheet" href="https://use.typekit.net/caa1gvk.css" />
 		<title>Records</title>
 	</head>
-	<body>
+	<body onload="start()">
 		<div id="app">Script loading...</div>
 
 		<script>
 			const LOADING = () =>
 				`<div id="loading">Loading your records...</div>`
-
-			// document.getElementById("app").innerHTML = LOADING()
 
 			const LAYOUT = (pageData) =>
 				`<div id="col">
@@ -127,9 +125,9 @@
 				]
 				const [a_al, a_num] = splCode(a)
 				const [b_al, b_num] = splCode(b)
-				
+
 				const [al, num] = [b_al > a_al ? -1 : 1, b_num > a_num ? -1 : 1]
-				const res = (a_al == b_al) ? num : al
+				const res = a_al == b_al ? num : al
 
 				return res
 			}
@@ -399,7 +397,10 @@
 				render()
 			}
 
-			load()
+			function start() {
+				document.getElementById("app").innerHTML = LOADING()
+				load()
+			}
 		</script>
 	</body>
 </html>
