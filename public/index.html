@@ -9,7 +9,9 @@
 			rel="stylesheet"
 			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,700,0,0"
 		/>
-		<title>V</title>
+		<script src="https://cdn.jsdelivr.net/npm/fuzzysort@2.0.4/fuzzysort.min.js"></script>
+		<link rel="stylesheet" href="https://use.typekit.net/caa1gvk.css">
+		<title>Records</title>
 	</head>
 	<body>
 		<div id="app"></div>
@@ -47,8 +49,8 @@
 
 			const SEARCH = (pageData) => `
 			<div id="search">
-				<input type="text" placeholder="Look for something...">
-				<button id="search-btn">Search</button>
+				<input id="search-inp" type="text" onKeyDown="onKeyDown(event)" placeholder="Look for something...">
+				<button id="search-btn" onClick="search()">Search</button>
 			</div>
 			`
 
@@ -74,7 +76,14 @@
 			`
 
 			const SECTION = (n) =>
-				`<details class="sec" id="details-${n}"><summary><p id="open">Click to hide</p><p id="closed">Click to view</p><h3>${n}</h3></summary><div class="sec-cont" id="c-${n}"></div></details>`
+				`<details class="sec" id="details-${n}">
+					<summary>
+						<p id="open" class="p-${n}">Click to hide</p>
+						<p id="closed" class="p-${n}">Click to view</p>
+						<h3>${n}</h3>
+					</summary>
+					<div class="sec-cont" id="c-${n}"></div>
+				</details>`
 
 			const CARD = (code, title, c1, c2, c3) =>
 				`<div class="card">
@@ -93,8 +102,58 @@
 			const RESET = () =>
 				`<button id="reset" class="secondary" onClick="resetHandler()">Reset Filters</button>`
 
-			// window.data = {}
-			// window.filteredData = {}
+			function search() {
+				window.searchTerm = document.getElementById("search-inp").value
+				render()
+				for (const el of isAnyDetailsOpen()[0]) {
+					el.setAttribute("open", "true")
+				}
+			}
+
+			function onKeyDown(e) {
+				if (e.key == "Enter") {
+					search()
+				}
+			}
+
+			function searchFilter() {
+				const emptyStringToNull = (e, i) =>
+					e[`${i}`] == "" ? null : e[`${i}`]
+				if (window.searchTerm) {
+					const processedFilteredData = window.filteredData.map(
+						(e) => ({
+							...e,
+							Values: e.Values.map((f) => ({
+								0: f[0],
+								1: f[1] ?? "",
+								2: f[2] ?? "",
+								3: f[3] ?? "",
+								4: f[4] ?? "",
+								type: e.Type,
+							})),
+						})
+					)
+					let searchedData = []
+					for (const k of processedFilteredData) {
+						const fuzzySorted = window.fuzzysort
+							.go(window.searchTerm, k.Values, {
+								keys: ["0", "1", "2", "3", "4", "type"],
+							})
+							.map((e) => e.obj)
+						searchedData.push({
+							Type: k.Type,
+							Values: fuzzySorted.map((e) => [
+								emptyStringToNull(e, 0),
+								emptyStringToNull(e, 1),
+								emptyStringToNull(e, 2),
+								emptyStringToNull(e, 3),
+								emptyStringToNull(e, 4),
+							]),
+						})
+					}
+					window.filteredData = searchedData
+				}
+			}
 
 			function linkV() {
 				if (navigator.share) {
@@ -142,23 +201,22 @@
 				const tI = f.findIndex((e) => e.Type == type)
 				f[tI].Values = f[tI].Values.filter((e) => e[code] == text)
 
-				console.log([tI, f[tI].Values.filter((e) => e[code] == text)])
-
 				window.filteredData = f
 			}
 
 			function render() {
 				window.filteredData = window.data
 				const [detEls, _] = isAnyDetailsOpen()
-				const openEls = [...detEls.filter(e => e.open)]
-
-				console.log(openEls)
-
+				const openEls = [...detEls.filter((e) => e.open)]
 
 				document.getElementById("app").innerHTML = LAYOUT(
 					window.pageData
 				)
 				;(window.selected ?? []).forEach((e) => filterData(e))
+
+				searchFilter()
+
+				setHideAllText()
 
 				for (const type of window.filteredData) {
 					document.getElementById("col").innerHTML += SECTION(
@@ -168,26 +226,44 @@
 						"c-" + type.Type
 					).innerHTML += `<div class="chips" id="s-${type.Type}"></div>`
 
-					for (const tag of [
-						...new Set(type.Values.map((e) => e[2])),
-					]) {
-						document.getElementById("s-" + type.Type).innerHTML +=
-							CHIP(2, tag, type.Type)
-					}
+					if (type.Values.length > 0) {
+						for (const tag of [
+							...new Set(type.Values.map((e) => e[2])),
+						]) {
+							document.getElementById(
+								"s-" + type.Type
+							).innerHTML += CHIP(2, tag, type.Type)
+						}
 
-					document.getElementById("s-" + type.Type).innerHTML +=
-						"<br><hr>"
-
-					for (const tag of [
-						...new Set(type.Values.map((e) => e[3])),
-					]) {
 						document.getElementById("s-" + type.Type).innerHTML +=
-							CHIP(3, tag, type.Type)
+							"<br><hr>"
+
+						for (const tag of [
+							...new Set(type.Values.map((e) => e[3])),
+						]) {
+							document.getElementById(
+								"s-" + type.Type
+							).innerHTML += CHIP(3, tag, type.Type)
+						}
 					}
 
 					for (const el of type.Values) {
 						document.getElementById("c-" + type.Type).innerHTML +=
 							CARD(...el)
+					}
+
+					if (type.Values.length == 0) {
+						document.getElementById("c-" + type.Type).innerHTML +=
+							"<p>No records found</p>"
+					} else {
+						const pTags = document.getElementsByClassName(
+							"p-" + type.Type
+						)
+						for (const el of pTags) {
+							el.innerText += ` (${type.Values.length} record${
+								type.Values.length == 1 ? "" : "s"
+							})`
+						}
 					}
 				}
 
@@ -199,19 +275,21 @@
 							.setAttribute("selected", "true")
 					}
 				})
-
-				setHideAllText()
-
-				console.log(openEls)
-
 				for (const el of openEls) {
-					console.log(el.id)
 					document.getElementById(el.id).setAttribute("open", "true")
 				}
 
-				if ((window.selected ?? []).length > 0) {
+				if ((window.selected ?? []).length > 0 || window.searchTerm) {
 					document.getElementById("reset-slot").innerHTML += RESET()
 				}
+
+				if (window.searchTerm) {
+					document
+						.getElementById("search-inp")
+						.setAttribute("value", window.searchTerm)
+				}
+
+				setHideAllText()
 			}
 
 			async function load() {
@@ -286,6 +364,7 @@
 				window.filteredData = structuredClone(window.data)
 				window.filtered = false
 				window.selected = []
+				window.searchTerm = null
 				render()
 			}
 

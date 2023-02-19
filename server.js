@@ -133,7 +133,7 @@ app.get("/r/index", (_, res) => {
 	}
 
 	const pageData = {
-		title: "Vingal"
+		title: "Records"
 	}
 
 	res.send({pageData: pageData, data: d})
