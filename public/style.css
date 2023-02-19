@@ -221,13 +221,17 @@ hr {
 	background-color: var(--primary-light);
 	border: none;
 	cursor: pointer;
-	border: rgb(212, 212, 212) 2px solid;
+	/* border: rgb(212, 212, 212) 2px solid; */
+	border: white 2px solid;
+	color: var(--text);
 
 	font-size: 14px;
 }
 
-.chip:hover {
-	border: rgb(123, 123, 123) 2px solid;
+.chip:hover:not([selected]) {
+	/* border: rgb(123, 123, 123) 2px solid; */
+	border: var(--primary) 2px solid;
+	color: var(--primary);
 }
 
 .chip[selected="true"] {
@@ -243,6 +247,12 @@ hr {
 summary.no-arrow {
 	display: block;
 	margin-bottom: 0;
+	list-style: none;
+}
+
+summary.no-arrow::marker, summary.no-arrow::-webkit-details-marker {
+	display: none;
+	content: "";
 }
 
 #share {
@@ -360,7 +370,7 @@ h1 {
 	font-weight: 300;
 }
 
-button:hover, a:hover {
+button:hover:not(.chip), a:hover {
 	color: var(--primary) !important;
 }
 

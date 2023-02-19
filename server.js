@@ -4,13 +4,13 @@ const fs = require("fs").promises
 
 const app = express()
 
-var { Liquid } = require("liquidjs")
-var engine = new Liquid()
+// var { Liquid } = require("liquidjs")
+// var engine = new Liquid()
 
 app.use(express.json())
-app.engine("liquid", engine.express())
-app.set("views", "./templates")
-app.set("view engine", "liquid")
+// app.engine("liquid", engine.express())
+// app.set("views", "./templates")
+// app.set("view engine", "liquid")
 app.use(express.static("public"))
 
 const ID = "1A1CMkDPP_zI3Uqsnkb588lHbKjuZVe2OigauPbUd3uc"
@@ -177,10 +177,14 @@ app.get("/reload", async (req, res) => {
 	res.redirect("/")
 })
 
+// app.get("/", (req, res) => {
+// 	res.redirect("/records")
+// })
+
 async function main() {
 	await refreshData()
 	app.listen(process.env.PORT || 3000, () => {
-		console.log("Server started")
+		console.log("Server started on port", process.env.PORT || 3000)
 	})
 }
 

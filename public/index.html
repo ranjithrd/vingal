@@ -10,15 +10,18 @@
 			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,700,0,0"
 		/>
 		<script src="https://cdn.jsdelivr.net/npm/fuzzysort@2.0.4/fuzzysort.min.js"></script>
-		<link rel="stylesheet" href="https://use.typekit.net/caa1gvk.css">
+		<link rel="stylesheet" href="https://use.typekit.net/caa1gvk.css" />
 		<title>Records</title>
 	</head>
 	<body>
-		<div id="app"></div>
+		<div id="app">Script loading...</div>
 
 		<script>
 			const LOADING = () =>
 				`<div id="loading">Loading your records...</div>`
+
+			// document.getElementById("app").innerHTML = LOADING()
+
 			const LAYOUT = (pageData) =>
 				`<div id="col">
 					<div id="info">
@@ -35,7 +38,7 @@
 								</button>
 						</div>
 						<div></div>
-						<details id="share-summary">
+						<details id="share-summary" class="no-arrow">
 							<summary class="no-arrow"></summary>
 							${SHARE(pageData)}
 						</details>
@@ -104,6 +107,7 @@
 
 			function search() {
 				window.searchTerm = document.getElementById("search-inp").value
+				window.selected = []
 				render()
 				for (const el of isAnyDetailsOpen()[0]) {
 					el.setAttribute("open", "true")
@@ -114,6 +118,20 @@
 				if (e.key == "Enter") {
 					search()
 				}
+			}
+
+			function codeSort(a, b) {
+				const splCode = (q) => [
+					q.match(/[a-zA-Z]/g).join(""),
+					parseInt(q.match(/[0-9]/g).join("")),
+				]
+				const [a_al, a_num] = splCode(a)
+				const [b_al, b_num] = splCode(b)
+				
+				const [al, num] = [b_al > a_al ? -1 : 1, b_num > a_num ? -1 : 1]
+				const res = (a_al == b_al) ? num : al
+
+				return res
 			}
 
 			function searchFilter() {
@@ -135,20 +153,28 @@
 					)
 					let searchedData = []
 					for (const k of processedFilteredData) {
-						const fuzzySorted = window.fuzzysort
+						let fuzzySorted = window.fuzzysort
 							.go(window.searchTerm, k.Values, {
 								keys: ["0", "1", "2", "3", "4", "type"],
 							})
 							.map((e) => e.obj)
+
+						let fVals = fuzzySorted.map((e) => [
+							emptyStringToNull(e, 0),
+							emptyStringToNull(e, 1),
+							emptyStringToNull(e, 2),
+							emptyStringToNull(e, 3),
+							emptyStringToNull(e, 4),
+						])
+
+						console.log(
+							"sorted",
+							fVals.sort((a, b) => codeSort(a[0], b[0]))
+						)
+
 						searchedData.push({
 							Type: k.Type,
-							Values: fuzzySorted.map((e) => [
-								emptyStringToNull(e, 0),
-								emptyStringToNull(e, 1),
-								emptyStringToNull(e, 2),
-								emptyStringToNull(e, 3),
-								emptyStringToNull(e, 4),
-							]),
+							Values: fVals,
 						})
 					}
 					window.filteredData = searchedData
@@ -199,7 +225,12 @@
 				let f = structuredClone(window.filteredData ?? {})
 
 				const tI = f.findIndex((e) => e.Type == type)
-				f[tI].Values = f[tI].Values.filter((e) => e[code] == text)
+				f[tI].Values = f[tI].Values.filter((e) => {
+					if (e[code] == text) console.log(e[code], text, e)
+					return e[code] == text
+				})
+
+				console.log(f[tI].Values)
 
 				window.filteredData = f
 			}
