@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Share Vingal</title>
+		<link rel="stylesheet" href="https://use.typekit.net/caa1gvk.css" />
+		<style>
+			:root {
+				--bg: rgb(245, 245, 245);
+				--primary-light: white;
+				--primary: rgb(104, 11, 76);
+				--text: black;
+				--secondary-text: rgb(96, 96, 96);
+			}
+
+			summary.no-arrow {
+				display: block;
+				margin-bottom: 0;
+			}
+
+			#share {
+				display: flex;
+				flex-direction: column;
+				gap: 1em;
+				padding: 2em;
+				background-color: var(--primary-light);
+				border-radius: 24px;
+			}
+
+			.link-box {
+				width: 100%;
+				text-align: center;
+				display: flex;
+				align-items: center;
+				flex-direction: column;
+				gap: 1em;
+			}
+
+			.link-box img {
+				width: 75%;
+			}
+
+			button.plain {
+				width: 90%;
+				background-color: transparent;
+				color: var(--primary);
+				text-align: center;
+				padding: 10px;
+				font-size: 1em;
+				font-weight: bold;
+				border: none;
+				cursor: pointer;
+			}
+
+			.secondary.large {
+				font-size: 1em;
+				font-weight: bold;
+				color: var(--primary);
+				border-radius: 20px;
+			}
+
+			.nopointer {
+				pointer-events: none;
+			}
+
+			*,
+			.sans {
+				font-family: "freight-sans-pro", system-ui, -apple-system,
+					BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+					Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+			}
+
+			h1,
+			h2,
+			h3,
+			h4,
+			h5,
+			h6,
+			.serif {
+				font-family: "freight-display-pro", Georgia, "Times New Roman",
+					Times, serif;
+			}
+
+			.card h3 {
+				font-weight: 400;
+				font-size: 150%;
+			}
+
+			h1 {
+				font-size: 4em;
+				/* font-family: "freightbigcmp-pro"; */
+				font-weight: 300;
+			}
+
+			button:hover,
+			a:hover {
+				color: var(--primary) !important;
+			}
+
+			hr {
+				border: 1px solid var(--primary);
+			}
+
+			@media (min-width: 720px) {
+				#share {
+					flex-direction: row;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div id="share">
+			<div class="link-box">
+				<h3>This Page</h3>
+				<p>Anyone on the internet can access this page.</p>
+				<p>Scan the QR code or tap it to share the link.</p>
+				<button onClick="linkV()" id="link-share-e" class="plain">
+					<img src="/view_qr.png" width="100%" />
+				</button>
+			</div>
+			<div class="link-box">
+				<h3>Edit Page</h3>
+				<p>Only authorized users can edit.</p>
+				<p>Scan the QR code or tap it to share the link.</p>
+				<button onClick="linkE()" id="link-share-e" class="plain">
+					<img src="/edit_qr.png" width="100%" />
+				</button>
+			</div>
+		</div>
+	</body>
+</html>
