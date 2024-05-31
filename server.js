@@ -184,7 +184,7 @@ app.get("/reload", async (req, res) => {
 async function main() {
 	await refreshData()
 	app.listen(process.env.PORT || 8301, () => {
-		console.log("Server started on port", process.env.PORT || 3000)
+		console.log("Server started on port", process.env.PORT || 8301)
 	})
 }
 
