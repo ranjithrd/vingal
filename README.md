@@ -5,4 +5,14 @@ search bar in main site
 
 ## Cloning
 
-create cache.json, credentials.json
+in .env
+
+```
+private_key="...."
+```
+
+or otherwise provide private_key variable
+
+## Building for Docker
+
+Build to linux/amd64.
