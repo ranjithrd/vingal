@@ -22,19 +22,22 @@ async function getSheetsClient() {
 	const au = new google.auth.GoogleAuth({
 		// keyFile: "credentials.json",
 		credentials: {
-			"type": "service_account",
-			"project_id": "vingal",
-			"private_key_id": "88af14b05736a3a9f2270f3ec030596e1b5d47c2",
-			"private_key": process.env.private_key,
-			"client_email": "vg-serviceaccount-njs-sheets@vingal.iam.gserviceaccount.com",
-			"client_id": "102377590308794956347",
-			"auth_uri": "https://accounts.google.com/o/oauth2/auth",
-			"token_uri": "https://oauth2.googleapis.com/token",
-			"auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-			"client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/vg-serviceaccount-njs-sheets%40vingal.iam.gserviceaccount.com"		  
+			type: "service_account",
+			project_id: "vingal",
+			private_key_id: "88af14b05736a3a9f2270f3ec030596e1b5d47c2",
+			private_key: process.env.private_key.replace(/\\n/g, "\n"),
+			client_email: "vg-serviceaccount-njs-sheets@vingal.iam.gserviceaccount.com",
+			client_id: "102377590308794956347",
+			auth_uri: "https://accounts.google.com/o/oauth2/auth",
+			token_uri: "https://oauth2.googleapis.com/token",
+			auth_provider_x509_cert_url: "https://www.googleapis.com/oauth2/v1/certs",
+			client_x509_cert_url:
+				"https://www.googleapis.com/robot/v1/metadata/x509/vg-serviceaccount-njs-sheets%40vingal.iam.gserviceaccount.com",
 		},
 		scopes: ["https://www.googleapis.com/auth/spreadsheets"],
 	})
+
+	// console.log(process.env.private_key.replace(/\\n/g, "\n"))
 
 	const client = await au.getClient()
 
@@ -156,13 +159,7 @@ app.get("/r/index", async (_, res) => {
 	let { lastRefreshed, data } = await getCache()
 
 	const now = Date.now()
-	console.log([
-		"/r/index",
-		lastRefreshed,
-		now,
-		now - refreshValue,
-		lastRefreshed < now - refreshValue,
-	])
+	console.log(["/r/index", lastRefreshed, now, now - refreshValue, lastRefreshed < now - refreshValue])
 
 	if (!data || lastRefreshed < now - refreshValue) {
 		await refreshData()
@@ -170,12 +167,15 @@ app.get("/r/index", async (_, res) => {
 		finalData = data
 	}
 
+	// console.log(finalData)
+
 	let d = []
 
 	for (const [k, v] of Object.entries(finalData)) {
+		// console.log([k, v])
 		d.push({
 			Type: k,
-			Values: v.map((e) => [e.Code, e.Title, e.Cat1, e.Cat2, e.Cat3]),
+			Values: (v ?? []).map((e) => [e.Code, e.Title, e.Cat1, e.Cat2, e.Cat3]),
 		})
 	}
 

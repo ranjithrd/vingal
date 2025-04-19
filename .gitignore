@@ -3,3 +3,4 @@ credentials.json
 cache.json
 *.env
 */package-lock.json
+**/.DS_Store
